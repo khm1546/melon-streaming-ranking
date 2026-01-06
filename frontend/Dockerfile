@@ -7,7 +7,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm ci --verbose
 
 # Copy source code
 COPY . .
@@ -16,8 +16,11 @@ COPY . .
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 
-# Build the application
-RUN npm run build
+# Verify environment variable is set
+RUN echo "Building with VITE_API_URL: $VITE_API_URL"
+
+# Build the application with verbose output
+RUN npm run build -- --mode production
 
 # Production stage
 FROM nginx:alpine
