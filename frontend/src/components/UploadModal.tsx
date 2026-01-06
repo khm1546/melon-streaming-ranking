@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useDropzone } from 'react-dropzone'
 import { verificationsApi } from '../api/client'
 import type { Song } from '../App'

@@ -52,53 +52,6 @@ const Leaderboard = () => {
     fetchLeaderboard()
   }, [filter, selectedSongId])
 
-  // Fallback mock data for development
-  const mockData: LeaderboardEntry[] = [
-    {
-      id: 1,
-      rank: 1,
-      username: 'NSWER_Supreme',
-      songTitle: 'Love Me Like This',
-      streamCount: 15234,
-      verifiedAt: '2024-01-05',
-      profileImage: 'https://via.placeholder.com/100/ff006e/ffffff?text=NS'
-    },
-    {
-      id: 2,
-      rank: 2,
-      username: 'StreamQueen',
-      songTitle: 'O.O',
-      streamCount: 12456,
-      verifiedAt: '2024-01-05',
-      profileImage: 'https://via.placeholder.com/100/8338ec/ffffff?text=SQ'
-    },
-    {
-      id: 3,
-      rank: 3,
-      username: 'NMIXX_Forever',
-      songTitle: 'DICE',
-      streamCount: 11234,
-      verifiedAt: '2024-01-04',
-      profileImage: 'https://via.placeholder.com/100/00f5ff/000000?text=NF'
-    },
-    {
-      id: 4,
-      rank: 4,
-      username: 'MixItUp',
-      songTitle: 'TANK',
-      streamCount: 9876,
-      verifiedAt: '2024-01-04',
-    },
-    {
-      id: 5,
-      rank: 5,
-      username: 'StreamMaster',
-      songTitle: 'Love Me Like This',
-      streamCount: 8765,
-      verifiedAt: '2024-01-03',
-    }
-  ]
-
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('ko-KR').format(num)
   }

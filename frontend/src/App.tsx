@@ -32,19 +32,15 @@ function App() {
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [activeView, setActiveView] = useState<'songs' | 'leaderboard'>('songs')
   const [songs, setSongs] = useState<Song[]>([])
-  const [loading, setLoading] = useState(true)
 
   // Fetch songs from API
   useEffect(() => {
     const fetchSongs = async () => {
       try {
-        setLoading(true)
         const data = await songsApi.getAll()
         setSongs(data)
       } catch (error) {
         console.error('Failed to fetch songs:', error)
-      } finally {
-        setLoading(false)
       }
     }
 
