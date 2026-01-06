@@ -1,0 +1,87 @@
+import axios from 'axios'
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+
+export const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
+export interface Song {
+  id: number
+  title: string
+  album: string
+  releaseDate: string
+  coverImage: string
+  streamCount: number
+}
+
+export interface LeaderboardEntry {
+  id: number
+  rank: number
+  username: string
+  profileImage?: string
+  songTitle: string
+  songId: number
+  streamCount: number
+  verifiedAt: string
+  createdAt: string
+}
+
+export interface Stats {
+  totalVerifications: number
+  totalStreams: number
+  activeUsers: number
+  totalSongs: number
+}
+
+export const songsApi = {
+  getAll: async (): Promise<Song[]> => {
+    const response = await apiClient.get('/songs')
+    return response.data
+  },
+
+  getById: async (id: number): Promise<Song> => {
+    const response = await apiClient.get(`/songs/${id}`)
+    return response.data
+  },
+}
+
+export const leaderboardApi = {
+  get: async (
+    filter: 'all' | 'today' | 'week' | 'month' = 'all',
+    songId?: number
+  ): Promise<LeaderboardEntry[]> => {
+    const params: any = { filter }
+    if (songId) {
+      params.songId = songId
+    }
+    const response = await apiClient.get('/leaderboard', { params })
+    return response.data
+  },
+}
+
+export const verificationsApi = {
+  create: async (formData: FormData) => {
+    const response = await apiClient.post('/verifications', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data
+  },
+
+  getById: async (id: number) => {
+    const response = await apiClient.get(`/verifications/${id}`)
+    return response.data
+  },
+}
+
+export const statsApi = {
+  get: async (): Promise<Stats> => {
+    const response = await apiClient.get('/stats')
+    return response.data
+  },
+}

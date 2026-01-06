@@ -1,0 +1,15 @@
+.app {
+  min-height: 100vh;
+  position: relative;
+}
+
+.main-content {
+  padding-top: 80px;
+  padding-bottom: var(--space-2xl);
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding-top: 70px;
+  }
+}
