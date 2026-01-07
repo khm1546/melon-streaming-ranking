@@ -85,3 +85,10 @@ export const statsApi = {
     return response.data
   },
 }
+
+export const authApi = {
+  login: async (username: string, pin: string) => {
+    const response = await apiClient.post('/auth/login', { username, pin })
+    return response.data
+  },
+}

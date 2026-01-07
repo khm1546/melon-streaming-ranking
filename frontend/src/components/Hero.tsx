@@ -1,7 +1,32 @@
 import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { statsApi, Stats } from '../api/client'
 import './Hero.css'
 
 const Hero = () => {
+  const [stats, setStats] = useState<Stats | null>(null)
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const data = await statsApi.get()
+        setStats(data)
+      } catch (error) {
+        console.error('Failed to fetch stats:', error)
+      }
+    }
+    fetchStats()
+  }, [])
+
+  const formatNumber = (num: number): string => {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M+'
+    } else if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K+'
+    }
+    return num.toString()
+  }
+
   return (
     <section className="hero container">
       <motion.div
@@ -41,15 +66,21 @@ const Hero = () => {
           transition={{ duration: 0.8, delay: 0.7 }}
         >
           <div className="stat-card glass">
-            <div className="stat-value">1.2M+</div>
+            <div className="stat-value">
+              {stats ? formatNumber(stats.totalStreams) : '...'}
+            </div>
             <div className="stat-label">Total Streams</div>
           </div>
           <div className="stat-card glass">
-            <div className="stat-value">3.5K+</div>
+            <div className="stat-value">
+              {stats ? formatNumber(stats.activeUsers) : '...'}
+            </div>
             <div className="stat-label">Active NSWERs</div>
           </div>
           <div className="stat-card glass">
-            <div className="stat-value">24</div>
+            <div className="stat-value">
+              {stats ? stats.totalSongs : '...'}
+            </div>
             <div className="stat-label">Songs</div>
           </div>
         </motion.div>

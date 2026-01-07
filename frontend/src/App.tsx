@@ -5,7 +5,10 @@ import Hero from './components/Hero'
 import SongGrid from './components/SongGrid'
 import Leaderboard from './components/Leaderboard'
 import UploadModal from './components/UploadModal'
+import LoginModal from './components/LoginModal'
+import ProofModal from './components/ProofModal'
 import { songsApi } from './api/client'
+import { authUtils } from './utils/auth'
 import './App.css'
 
 export interface Song {
@@ -32,6 +35,27 @@ function App() {
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [activeView, setActiveView] = useState<'songs' | 'leaderboard'>('songs')
   const [songs, setSongs] = useState<Song[]>([])
+
+  // Auth state
+  const [username, setUsername] = useState<string | null>(null)
+  const [showLoginModal, setShowLoginModal] = useState(false)
+
+  // Proof modal state
+  const [showProofModal, setShowProofModal] = useState(false)
+  const [proofModalData, setProofModalData] = useState<{
+    verificationId: number
+    username: string
+    songTitle: string
+    streamCount: number
+  } | null>(null)
+
+  // Initialize auth state from localStorage
+  useEffect(() => {
+    const currentUsername = authUtils.getCurrentUsername()
+    if (currentUsername) {
+      setUsername(currentUsername)
+    }
+  }, [])
 
   // Fetch songs from API
   useEffect(() => {
@@ -68,9 +92,39 @@ function App() {
     handleCloseModal()
   }
 
+  const handleLoginClick = () => {
+    setShowLoginModal(true)
+  }
+
+  const handleLoginSuccess = (loggedInUsername: string) => {
+    setUsername(loggedInUsername)
+    setShowLoginModal(false)
+  }
+
+  const handleLogoutClick = () => {
+    authUtils.clearAuth()
+    setUsername(null)
+  }
+
+  const handleProofClick = (verificationId: number, username: string, songTitle: string, streamCount: number) => {
+    setProofModalData({ verificationId, username, songTitle, streamCount })
+    setShowProofModal(true)
+  }
+
+  const handleCloseProofModal = () => {
+    setShowProofModal(false)
+    setProofModalData(null)
+  }
+
   return (
     <div className="app">
-      <Header activeView={activeView} onViewChange={setActiveView} />
+      <Header
+        activeView={activeView}
+        onViewChange={setActiveView}
+        username={username}
+        onLoginClick={handleLoginClick}
+        onLogoutClick={handleLogoutClick}
+      />
 
       <main className="main-content">
         <AnimatePresence mode="wait">
@@ -93,7 +147,10 @@ function App() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              <Leaderboard />
+              <Leaderboard
+                currentUsername={username}
+                onProofClick={handleProofClick}
+              />
             </motion.div>
           )}
         </AnimatePresence>
@@ -105,9 +162,27 @@ function App() {
             song={selectedSong}
             onClose={handleCloseModal}
             onSuccess={handleUploadSuccess}
+            onLoginSuccess={handleLoginSuccess}
           />
         )}
       </AnimatePresence>
+
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onLoginSuccess={handleLoginSuccess}
+      />
+
+      {proofModalData && (
+        <ProofModal
+          isOpen={showProofModal}
+          onClose={handleCloseProofModal}
+          verificationId={proofModalData.verificationId}
+          username={proofModalData.username}
+          songTitle={proofModalData.songTitle}
+          streamCount={proofModalData.streamCount}
+        />
+      )}
     </div>
   )
 }

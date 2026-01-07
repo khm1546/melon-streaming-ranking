@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useDropzone } from 'react-dropzone'
 import { verificationsApi } from '../api/client'
+import { authUtils } from '../utils/auth'
 import type { Song } from '../App'
 import './UploadModal.css'
 
@@ -9,9 +10,10 @@ interface UploadModalProps {
   song: Song
   onClose: () => void
   onSuccess: () => void
+  onLoginSuccess: (username: string) => void
 }
 
-const UploadModal = ({ song, onClose, onSuccess }: UploadModalProps) => {
+const UploadModal = ({ song, onClose, onSuccess, onLoginSuccess }: UploadModalProps) => {
   const [username, setUsername] = useState('')
   const [pin, setPin] = useState('')
   const [streamCount, setStreamCount] = useState('')
@@ -21,10 +23,11 @@ const UploadModal = ({ song, onClose, onSuccess }: UploadModalProps) => {
 
   // Load saved credentials from localStorage
   useEffect(() => {
-    const savedUsername = localStorage.getItem('nmixx_username')
-    const savedPin = localStorage.getItem('nmixx_pin')
-    if (savedUsername) setUsername(savedUsername)
-    if (savedPin) setPin(savedPin)
+    const auth = authUtils.getAuth()
+    if (auth) {
+      setUsername(auth.username)
+      setPin(auth.pin)
+    }
   }, [])
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -75,9 +78,9 @@ const UploadModal = ({ song, onClose, onSuccess }: UploadModalProps) => {
 
       const response = await verificationsApi.create(formData)
 
-      // Save credentials to localStorage on success
-      localStorage.setItem('nmixx_username', username)
-      localStorage.setItem('nmixx_pin', pin)
+      // Save credentials to localStorage and auto-login on success
+      authUtils.saveAuth(username, pin)
+      onLoginSuccess(username)
 
       alert(response.message || '업로드 성공! 스트리밍 인증이 제출되었습니다.')
       onSuccess()

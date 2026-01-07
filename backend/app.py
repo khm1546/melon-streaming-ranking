@@ -32,6 +32,41 @@ def health_check():
     return jsonify({'status': 'healthy', 'timestamp': datetime.utcnow().isoformat()})
 
 
+@app.route('/api/auth/login', methods=['POST'])
+def login():
+    """Verify username and PIN for login"""
+    try:
+        data = request.get_json()
+        username = data.get('username')
+        pin = data.get('pin')
+
+        if not username or not pin:
+            return jsonify({'error': '닉네임과 PIN을 입력해주세요'}), 400
+
+        # Validate PIN format (4 digits)
+        if not pin.isdigit() or len(pin) != 4:
+            return jsonify({'error': 'PIN은 정확히 4자리 숫자여야 합니다'}), 400
+
+        # Check if user exists
+        user = User.query.filter_by(username=username).first()
+        if not user:
+            return jsonify({'error': '등록되지 않은 닉네임입니다. 먼저 스트리밍 인증을 제출해주세요.'}), 404
+
+        # Verify PIN
+        if not user.verify_pin(pin):
+            return jsonify({'error': 'PIN이 일치하지 않습니다'}), 401
+
+        # Login successful
+        return jsonify({
+            'success': True,
+            'username': user.username,
+            'message': '로그인 성공!'
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/api/songs', methods=['GET'])
 def get_songs():
     """Get all songs"""
@@ -117,14 +152,14 @@ def create_verification():
     try:
         # Validate request
         if 'proof' not in request.files:
-            return jsonify({'error': 'No proof image provided'}), 400
+            return jsonify({'error': '인증 이미지를 업로드해주세요'}), 400
 
         proof_file = request.files['proof']
         if proof_file.filename == '':
-            return jsonify({'error': 'No file selected'}), 400
+            return jsonify({'error': '파일이 선택되지 않았습니다'}), 400
 
         if not allowed_file(proof_file.filename):
-            return jsonify({'error': 'Invalid file type'}), 400
+            return jsonify({'error': '지원하지 않는 파일 형식입니다. PNG, JPG, JPEG, GIF, WEBP 파일만 업로드 가능합니다'}), 400
 
         # Get form data
         username = request.form.get('username')
@@ -133,11 +168,11 @@ def create_verification():
         stream_count = request.form.get('streamCount')
 
         if not all([username, pin, song_id, stream_count]):
-            return jsonify({'error': 'Missing required fields (username, pin, songId, streamCount)'}), 400
+            return jsonify({'error': '모든 필수 항목을 입력해주세요 (닉네임, PIN, 곡, 스트리밍 횟수)'}), 400
 
         # Validate PIN format (4 digits)
         if not pin.isdigit() or len(pin) != 4:
-            return jsonify({'error': 'PIN must be exactly 4 digits'}), 400
+            return jsonify({'error': 'PIN은 정확히 4자리 숫자여야 합니다'}), 400
 
         # Validate song_id and stream count
         try:
@@ -146,19 +181,19 @@ def create_verification():
             if stream_count <= 0:
                 raise ValueError()
         except ValueError:
-            return jsonify({'error': 'Invalid song_id or stream count'}), 400
+            return jsonify({'error': '잘못된 곡 ID 또는 스트리밍 횟수입니다'}), 400
 
         # Check if song exists
         song = Song.query.get(song_id)
         if not song:
-            return jsonify({'error': 'Song not found'}), 404
+            return jsonify({'error': '해당 곡을 찾을 수 없습니다'}), 404
 
         # Get or create user with PIN
         user = User.query.filter_by(username=username).first()
         if user:
             # User exists - verify PIN
             if not user.verify_pin(pin):
-                return jsonify({'error': 'Invalid PIN for this username'}), 401
+                return jsonify({'error': '이 닉네임의 PIN이 일치하지 않습니다'}), 401
         else:
             # Create new user with PIN
             user = User(username=username, pin_hash=User.hash_pin(pin))
@@ -184,7 +219,7 @@ def create_verification():
             verification.proof_image = filename
             verification.verified_at = datetime.utcnow()
             verification.updated_at = datetime.utcnow()
-            message = 'Verification updated successfully'
+            message = '스트리밍 인증이 업데이트되었습니다!'
         else:
             # Create new verification
             verification = Verification(
@@ -196,7 +231,7 @@ def create_verification():
                 verified_at=datetime.utcnow()
             )
             db.session.add(verification)
-            message = 'Verification created successfully'
+            message = '스트리밍 인증이 성공적으로 제출되었습니다!'
 
         db.session.commit()
 
@@ -207,7 +242,7 @@ def create_verification():
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': f'서버 오류가 발생했습니다: {str(e)}'}), 500
 
 
 @app.route('/api/verifications/<int:verification_id>', methods=['GET'])

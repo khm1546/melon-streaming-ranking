@@ -105,6 +105,91 @@
   font-size: 1.2rem;
 }
 
+.auth-section {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-md);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-icon {
+  font-size: 1.2rem;
+}
+
+.username {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.login-button,
+.logout-button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  color: white;
+  border-radius: var(--radius-lg);
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-button::before,
+.logout-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.login-button:hover::before,
+.logout-button:hover::before {
+  left: 100%;
+}
+
+.login-button:hover,
+.logout-button:hover {
+  box-shadow: 0 0 20px rgba(255, 0, 110, 0.5);
+}
+
+.logout-button {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.logout-button:hover {
+  background: rgba(255, 0, 110, 0.1);
+  border-color: var(--color-primary);
+  color: white;
+  box-shadow: 0 0 20px rgba(255, 0, 110, 0.3);
+}
+
+.login-icon {
+  font-size: 1.1rem;
+}
+
 @media (max-width: 768px) {
   .header {
     padding: var(--space-sm) 0;
@@ -118,6 +203,10 @@
     font-size: 0.6rem;
   }
 
+  .nav {
+    gap: 6px;
+  }
+
   .nav-button {
     padding: var(--space-xs) var(--space-sm);
     font-size: 0.85rem;
@@ -129,5 +218,30 @@
 
   .nav-icon {
     font-size: 1.4rem;
+  }
+
+  .user-badge {
+    padding: var(--space-xs) var(--space-sm);
+  }
+
+  .user-badge .username {
+    display: none;
+  }
+
+  .login-button span:not(.login-icon),
+  .logout-button {
+    display: none;
+  }
+
+  .login-button {
+    padding: var(--space-xs);
+    width: 40px;
+    height: 40px;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  .login-icon {
+    font-size: 1.3rem;
   }
 }
