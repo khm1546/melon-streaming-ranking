@@ -8,6 +8,10 @@
   overflow: hidden;
 }
 
+.hero.container {
+  margin-top: 60px;
+}
+
 .hero-content {
   text-align: center;
   z-index: 10;
