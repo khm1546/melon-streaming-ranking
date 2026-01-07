@@ -135,7 +135,7 @@ const ProofModal = ({ isOpen, onClose, verificationId }: ProofModalProps) => {
                   <div className="proof-image-container">
                     <div className="proof-image-wrapper">
                       <motion.img
-                        src={`/image/melon/${verification.proofImage}`}
+                        src={`/uploads/${verification.proofImage}`}
                         alt="스트리밍 인증 스크린샷"
                         className="proof-image"
                         initial={{ opacity: 0, scale: 0.95 }}
