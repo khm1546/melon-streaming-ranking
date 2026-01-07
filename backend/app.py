@@ -4,7 +4,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from config import config
-from models import db, User, Song, Verification
+from models import db, User, Song, Verification, kst_now
 
 app = Flask(__name__)
 
@@ -29,7 +29,7 @@ def allowed_file(filename):
 @app.route('/api/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
-    return jsonify({'status': 'healthy', 'timestamp': datetime.utcnow().isoformat()})
+    return jsonify({'status': 'healthy', 'timestamp': kst_now().isoformat()})
 
 
 @app.route('/api/auth/login', methods=['POST'])
@@ -111,7 +111,7 @@ def get_leaderboard():
             query = query.filter(Song.id == int(song_id))
 
         # Apply time filter
-        now = datetime.utcnow()
+        now = kst_now()
         if time_filter == 'today':
             query = query.filter(db.func.date(Verification.created_at) == now.date())
         elif time_filter == 'week':
@@ -202,7 +202,7 @@ def create_verification():
 
         # Save proof image
         filename = secure_filename(proof_file.filename)
-        timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+        timestamp = kst_now().strftime('%Y%m%d_%H%M%S')
         filename = f"{user.id}_{song_id}_{timestamp}_{filename}"
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         proof_file.save(filepath)
@@ -217,8 +217,8 @@ def create_verification():
             # Update existing verification
             verification.stream_count = stream_count
             verification.proof_image = filename
-            verification.verified_at = datetime.utcnow()
-            verification.updated_at = datetime.utcnow()
+            verification.verified_at = kst_now()
+            verification.updated_at = kst_now()
             message = '스트리밍 인증이 업데이트되었습니다!'
         else:
             # Create new verification
@@ -228,7 +228,7 @@ def create_verification():
                 stream_count=stream_count,
                 proof_image=filename,
                 status='approved',
-                verified_at=datetime.utcnow()
+                verified_at=kst_now()
             )
             db.session.add(verification)
             message = '스트리밍 인증이 성공적으로 제출되었습니다!'
@@ -261,7 +261,7 @@ def approve_verification(verification_id):
     try:
         verification = Verification.query.get_or_404(verification_id)
         verification.status = 'approved'
-        verification.verified_at = datetime.utcnow()
+        verification.verified_at = kst_now()
         db.session.commit()
         return jsonify(verification.to_dict())
     except Exception as e:

@@ -1,8 +1,15 @@
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from flask_sqlalchemy import SQLAlchemy
 import hashlib
 
 db = SQLAlchemy()
+
+# KST (한국 표준시) 타임존: UTC+9
+KST = timezone(timedelta(hours=9))
+
+def kst_now():
+    """한국 표준시(KST) 현재 시간 반환"""
+    return datetime.now(KST)
 
 
 class User(db.Model):
@@ -11,8 +18,8 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     pin_hash = db.Column(db.String(255), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=kst_now)
+    updated_at = db.Column(db.DateTime, default=kst_now, onupdate=kst_now)
 
     verifications = db.relationship('Verification', back_populates='user', cascade='all, delete-orphan')
 
@@ -43,8 +50,8 @@ class Song(db.Model):
     release_date = db.Column(db.Date, nullable=False)
     cover_image = db.Column(db.String(255))
     total_stream_count = db.Column(db.BigInteger, default=0)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=kst_now)
+    updated_at = db.Column(db.DateTime, default=kst_now, onupdate=kst_now)
 
     verifications = db.relationship('Verification', back_populates='song', cascade='all, delete-orphan')
 
@@ -71,8 +78,8 @@ class Verification(db.Model):
     proof_image = db.Column(db.String(255), nullable=False)
     status = db.Column(db.String(20), default='pending')
     verified_at = db.Column(db.DateTime)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=kst_now)
+    updated_at = db.Column(db.DateTime, default=kst_now, onupdate=kst_now)
 
     user = db.relationship('User', back_populates='verifications')
     song = db.relationship('Song', back_populates='verifications')
