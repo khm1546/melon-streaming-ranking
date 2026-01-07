@@ -16,7 +16,7 @@ interface LeaderboardEntry {
 
 interface LeaderboardProps {
   currentUsername: string | null
-  onProofClick: (verificationId: number, username: string, songTitle: string, streamCount: number) => void
+  onProofClick: (verificationId: number) => void
 }
 
 const Leaderboard = ({ currentUsername, onProofClick }: LeaderboardProps) => {
@@ -119,8 +119,6 @@ const Leaderboard = ({ currentUsername, onProofClick }: LeaderboardProps) => {
   const currentUserEntry = currentUsername && selectedSongId
     ? data.find(entry => entry.username === currentUsername)
     : null
-
-  const showUserEntrySeparately = currentUserEntry && currentUserEntry.rank > DISPLAY_LIMIT
 
   return (
     <section className="leaderboard-section container">
@@ -267,7 +265,7 @@ const Leaderboard = ({ currentUsername, onProofClick }: LeaderboardProps) => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
                 whileHover={{ scale: 1.02 }}
-                onClick={() => onProofClick(entry.id, entry.username, entry.songTitle, entry.streamCount)}
+                onClick={() => onProofClick(entry.id)}
                 style={{ cursor: 'pointer' }}
               >
                 <div className="rank-badge">

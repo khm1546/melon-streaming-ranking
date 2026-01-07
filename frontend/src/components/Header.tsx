@@ -1,5 +1,4 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { authUtils } from '../utils/auth'
 import './Header.css'
 
 interface HeaderProps {

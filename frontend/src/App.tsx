@@ -44,9 +44,6 @@ function App() {
   const [showProofModal, setShowProofModal] = useState(false)
   const [proofModalData, setProofModalData] = useState<{
     verificationId: number
-    username: string
-    songTitle: string
-    streamCount: number
   } | null>(null)
 
   // Initialize auth state from localStorage
@@ -106,8 +103,8 @@ function App() {
     setUsername(null)
   }
 
-  const handleProofClick = (verificationId: number, username: string, songTitle: string, streamCount: number) => {
-    setProofModalData({ verificationId, username, songTitle, streamCount })
+  const handleProofClick = (verificationId: number) => {
+    setProofModalData({ verificationId })
     setShowProofModal(true)
   }
 
@@ -178,9 +175,6 @@ function App() {
           isOpen={showProofModal}
           onClose={handleCloseProofModal}
           verificationId={proofModalData.verificationId}
-          username={proofModalData.username}
-          songTitle={proofModalData.songTitle}
-          streamCount={proofModalData.streamCount}
         />
       )}
     </div>

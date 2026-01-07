@@ -7,9 +7,6 @@ interface ProofModalProps {
   isOpen: boolean
   onClose: () => void
   verificationId: number
-  username: string
-  songTitle: string
-  streamCount: number
 }
 
 interface VerificationDetail {
@@ -23,7 +20,7 @@ interface VerificationDetail {
   createdAt: string
 }
 
-const ProofModal = ({ isOpen, onClose, verificationId, username, songTitle, streamCount }: ProofModalProps) => {
+const ProofModal = ({ isOpen, onClose, verificationId }: ProofModalProps) => {
   const [verification, setVerification] = useState<VerificationDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
