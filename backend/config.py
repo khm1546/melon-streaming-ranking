@@ -11,6 +11,13 @@ class Config:
     database_url = os.environ.get('DATABASE_URL', 'postgresql://localhost/nmixx_streaming')
     if database_url.startswith('postgresql://'):
         database_url = database_url.replace('postgresql://', 'postgresql+psycopg://', 1)
+    
+    # Add timezone parameter for KST (Asia/Seoul)
+    if '?' in database_url:
+        database_url += '&options=-c timezone=Asia/Seoul'
+    else:
+        database_url += '?options=-c timezone=Asia/Seoul'
+    
     SQLALCHEMY_DATABASE_URI = database_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER', 'uploads')
