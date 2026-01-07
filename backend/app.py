@@ -139,13 +139,14 @@ def create_verification():
         if not pin.isdigit() or len(pin) != 4:
             return jsonify({'error': 'PIN must be exactly 4 digits'}), 400
 
-        # Validate stream count
+        # Validate song_id and stream count
         try:
+            song_id = int(song_id)
             stream_count = int(stream_count)
             if stream_count <= 0:
                 raise ValueError()
         except ValueError:
-            return jsonify({'error': 'Invalid stream count'}), 400
+            return jsonify({'error': 'Invalid song_id or stream count'}), 400
 
         # Check if song exists
         song = Song.query.get(song_id)
