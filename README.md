@@ -1,223 +1,182 @@
-# NMIXX Streaming Ranking
+# 🎵 NMIXX Streaming Ranking
 
-엔믹스 곡별 스트리밍 인증 및 순위 사이트입니다. 팬들이 스트리밍 인증을 업로드하고 순위를 경쟁할 수 있습니다.
+엔믹스 음악을 스트리밍하고 인증하여 최고의 NSWER가 되어보세요!
 
-## 기술 스택
-
-### Frontend
-- **React** with TypeScript
-- **Vite** - 빌드 도구
-- **Framer Motion** - 애니메이션
-- **Axios** - API 통신
-- **React Dropzone** - 파일 업로드
-
-### Backend
-- **Flask** - Python 웹 프레임워크
-- **Flask-SQLAlchemy** - ORM
-- **Flask-CORS** - CORS 지원
-- **PostgreSQL** - 데이터베이스
-
-## 주요 기능
-
-- 🎵 엔믹스 곡 목록 조회
-- 📸 스트리밍 인증 스크린샷 업로드
-- 🏆 실시간 리더보드 (전체/오늘/이번주/이번달)
-- 📊 통계 대시보드
-- 🎨 홀로그래픽 Y2K 디자인
-- 📱 완벽한 반응형 디자인
-
-## 시작하기
-
-### 사전 요구사항
-
-- Node.js 18+
-- Python 3.9+
-- PostgreSQL 14+
-
-### 데이터베이스 설정
-
-1. PostgreSQL 데이터베이스 생성:
-```bash
-createdb nmixx_streaming
-```
-
-2. 스키마 적용:
-```bash
-psql -d nmixx_streaming -f database/schema.sql
-```
-
-### Backend 설정
-
-1. 가상환경 생성 및 활성화:
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-```
-
-2. 의존성 설치:
-```bash
-pip install -r requirements.txt
-```
-
-3. 환경 변수 설정:
-```bash
-cp .env.example .env
-# .env 파일을 편집하여 데이터베이스 연결 정보 등을 설정
-```
-
-4. Flask 서버 실행:
-```bash
-python app.py
-```
-
-서버는 `http://localhost:5000`에서 실행됩니다.
-
-### Frontend 설정
-
-1. 의존성 설치:
-```bash
-cd frontend
-npm install
-```
-
-2. 환경 변수 설정:
-```bash
-cp .env.example .env
-# 필요시 API URL 수정
-```
-
-3. 개발 서버 실행:
-```bash
-npm run dev
-```
-
-프론트엔드는 `http://localhost:3000`에서 실행됩니다.
-
-## API 엔드포인트
-
-### Songs
-- `GET /api/songs` - 모든 곡 조회
-- `GET /api/songs/:id` - 특정 곡 조회
-
-### Leaderboard
-- `GET /api/leaderboard?filter=all|today|week|month` - 리더보드 조회
-
-### Verifications
-- `POST /api/verifications` - 스트리밍 인증 업로드
-  - Form Data:
-    - `username`: 사용자 이름
-    - `songId`: 곡 ID
-    - `streamCount`: 스트리밍 횟수
-    - `proof`: 인증 스크린샷 (이미지 파일)
-- `GET /api/verifications/:id` - 특정 인증 조회
-- `PUT /api/verifications/:id/approve` - 인증 승인 (관리자)
-- `PUT /api/verifications/:id/reject` - 인증 거부 (관리자)
-
-### Stats
-- `GET /api/stats` - 전체 통계 조회
-
-### Users
-- `GET /api/users/:username` - 사용자 프로필 조회
-
-## 데이터베이스 스키마
-
-### users
-- 사용자 정보 저장
-- username은 unique
-
-### songs
-- 엔믹스 곡 정보
-- 총 스트리밍 횟수 자동 집계
-
-### verifications
-- 스트리밍 인증 정보
-- 상태: pending, approved, rejected
-- 자동으로 song의 total_stream_count 업데이트
-
-## 프로젝트 구조
-
-```
-melon-streaming-ranking/
-├── backend/
-│   ├── app.py              # Flask 애플리케이션
-│   ├── config.py           # 설정 파일
-│   ├── models.py           # SQLAlchemy 모델
-│   ├── requirements.txt    # Python 의존성
-│   ├── .env.example        # 환경 변수 예시
-│   └── uploads/            # 업로드된 파일
-├── frontend/
-│   ├── src/
-│   │   ├── components/     # React 컴포넌트
-│   │   ├── api/            # API 클라이언트
-│   │   ├── App.tsx         # 메인 앱
-│   │   └── main.tsx        # 엔트리 포인트
-│   ├── package.json
-│   └── vite.config.ts
-├── database/
-│   └── schema.sql          # PostgreSQL DDL
-└── README.md
-```
-
-## 개발 가이드
-
-### 새로운 곡 추가
-
-데이터베이스에 직접 추가하거나 pgAdmin 등의 도구를 사용:
-
-```sql
-INSERT INTO songs (title, album, release_date, cover_image)
-VALUES ('곡 제목', '앨범명', '2024-01-01', '이미지 URL');
-```
-
-### 스타일 커스터마이징
-
-CSS 변수는 `frontend/src/index.css`에 정의되어 있습니다:
-- 색상 테마
-- 간격 (spacing)
-- 글꼴 (typography)
-- 애니메이션 속도
-
-## 배포
-
-### Backend (Flask)
-
-추천 옵션:
-- **Heroku** - PostgreSQL 애드온과 함께
-- **Railway** - PostgreSQL 포함
-- **DigitalOcean App Platform**
-
-환경 변수 설정 필수:
-- `FLASK_ENV=production`
-- `DATABASE_URL` - PostgreSQL 연결 문자열
-- `SECRET_KEY` - 강력한 시크릿 키
-
-### Frontend (React)
-
-추천 옵션:
-- **Vercel** - 추천!
-- **Netlify**
-- **GitHub Pages**
-
-빌드 명령어:
-```bash
-npm run build
-```
-
-빌드된 파일은 `dist/` 폴더에 생성됩니다.
-
-## 라이선스
-
-이 프로젝트는 개인 학습 및 팬 프로젝트 목적으로 제작되었습니다.
-
-## 기여
-
-이슈와 Pull Request를 환영합니다!
-
-## 문의
-
-문제가 발생하면 GitHub Issues에 등록해주세요.
+> **Built with Claude Sonnet 4.5**
+> Claude Code의 `frontend-design` skill과 `playwright` skill을 활용하여 제작되었습니다.
 
 ---
 
-Made with 💜 for NMIXX & NSWER
+## 📱 미리보기 (Mobile)
+
+### 메인 화면
+엔믹스 곡 목록과 전체 스트리밍 통계를 확인할 수 있습니다.
+
+![메인 화면](screenshots/mobile-main.png)
+
+### 로그인
+닉네임과 4자리 PIN으로 간편하게 로그인하세요.
+개인정보는 수집하지 않으며, 모든 데이터는 기기에만 저장됩니다.
+
+![로그인 모달](screenshots/mobile-login.png)
+
+### 리더보드
+실시간 순위를 확인하고 다른 NSWER들과 경쟁하세요!
+
+![리더보드](screenshots/mobile-leaderboard.png)
+
+### 닉네임 검색
+리더보드에서 특정 사용자를 검색할 수 있습니다.
+
+![닉네임 검색](screenshots/mobile-search.png)
+
+### 인증 확인
+다른 사용자의 스트리밍 인증 스크린샷을 확인할 수 있습니다.
+
+![인증 모달](screenshots/mobile-proof-modal.png)
+
+---
+
+## 🚀 시작하기
+
+### 1️⃣ 회원가입 (스트리밍 인증)
+
+처음 사용하시는 분은 스트리밍 인증을 제출하면 자동으로 계정이 생성됩니다.
+
+1. **메인 페이지**에서 원하는 엔믹스 곡을 선택하세요
+2. **닉네임**을 입력하세요 (다른 사용자와 중복될 수 없습니다)
+3. **4자리 PIN**을 설정하세요 (로그인 시 필요합니다)
+4. **스트리밍 횟수**를 입력하세요
+5. **스크린샷**을 업로드하세요 (멜론/스포티파이 등의 스트리밍 인증 화면)
+6. **제출** 버튼을 클릭하세요
+
+✅ 제출이 완료되면 자동으로 로그인됩니다!
+
+⚠️ **주의사항:**
+- 닉네임과 PIN은 반드시 기억해야 합니다 (복구 불가능)
+- 개인정보는 수집하지 않습니다
+- 로그인 정보는 기기에만 저장됩니다
+
+---
+
+### 2️⃣ 로그인
+
+이미 계정이 있는 분은 간편하게 로그인할 수 있습니다.
+
+1. 우측 상단의 **로그인 버튼 (🔐)** 을 클릭하세요
+2. **닉네임**과 **PIN**을 입력하세요
+3. **로그인** 버튼을 클릭하세요
+
+✅ 로그인하면 리더보드에서 내 순위가 강조 표시됩니다!
+
+---
+
+### 3️⃣ 리더보드 확인
+
+상단의 **리더보드 버튼 (🏆)** 을 클릭하면 순위를 확인할 수 있습니다.
+
+#### 필터 옵션
+- **All Time**: 전체 기간 순위
+- **Today**: 오늘 제출된 인증만
+- **Week**: 이번 주 제출된 인증만
+- **Month**: 이번 달 제출된 인증만
+
+#### 곡 필터
+- **All Songs**: 모든 곡의 순위
+- **특정 곡 선택**: 선택한 곡만 필터링
+
+#### 내 순위 확인
+- 로그인 후 특정 곡을 선택하면 상단에 **내 순위 카드**가 표시됩니다
+- 리더보드에서 내 항목이 **강조 표시**됩니다
+
+#### 닉네임 검색
+- 검색창에 닉네임을 입력하면 해당 사용자를 찾을 수 있습니다
+- 검색 결과는 **청록색으로 강조**됩니다
+- 매칭된 사용자가 맨 위에 표시되고, 그 아래로 99명이 나타납니다
+
+---
+
+### 4️⃣ 인증 확인
+
+리더보드에서 임의의 항목을 클릭하면 해당 사용자의 **스트리밍 인증 스크린샷**을 확인할 수 있습니다.
+
+- 사용자 정보 (닉네임, 곡, 스트리밍 횟수)
+- 인증 시각
+- 인증 스크린샷
+
+---
+
+## ✨ 주요 기능
+
+- 🎵 **엔믹스 곡별 스트리밍 인증**
+- 🏆 **실시간 리더보드** (전체/오늘/이번주/이번달)
+- 🔍 **닉네임 검색** (상위 100개 중 검색)
+- 👤 **내 순위 강조 표시**
+- 🔐 **간편 로그인** (닉네임 + 4자리 PIN)
+- 📸 **인증 스크린샷 확인**
+- 🎨 **홀로그래픽 Y2K 디자인**
+- 📱 **완벽한 반응형 디자인** (모바일/태블릿/데스크톱)
+
+---
+
+## 🎨 디자인 특징
+
+이 프로젝트는 **Claude Sonnet 4.5**와 **frontend-design skill**을 사용하여 제작되었습니다.
+
+- **홀로그래픽 Y2K 스타일**: NMIXX의 컨셉에 맞는 미래지향적 디자인
+- **글래스모피즘**: 반투명 효과와 배경 흐림 처리
+- **부드러운 애니메이션**: Framer Motion을 활용한 자연스러운 전환
+- **그라데이션 효果**: 핑크, 퍼플, 시안 컬러의 조화
+- **반응형 디자인**: 모든 디바이스에서 완벽한 경험
+
+---
+
+## 🛠️ 기술 스택
+
+### Frontend
+- React + TypeScript
+- Vite (빌드 도구)
+- Framer Motion (애니메이션)
+- Axios (API 통신)
+- React Dropzone (파일 업로드)
+
+### Backend
+- Flask (Python)
+- PostgreSQL (데이터베이스)
+- SQLAlchemy (ORM)
+
+### Deployment
+- Docker + Docker Compose
+- Nginx (리버스 프록시)
+- Let's Encrypt (SSL 인증서)
+
+---
+
+## 🤖 AI 정보
+
+이 프로젝트는 **Claude Sonnet 4.5** (model ID: `claude-sonnet-4-5-20250929`)를 사용하여 개발되었습니다.
+
+### 사용된 Claude Code Skills
+- **`frontend-design`**: 홀로그래픽 Y2K 디자인의 프론트엔드 구현
+- **`playwright`**: 모바일 스크린샷 캡처 및 테스트
+
+### 주요 AI 기능
+- 🎨 독창적인 UI/UX 디자인
+- 💻 Full-stack 개발 (React + Flask)
+- 🔒 보안 (PIN 해싱, SQL injection 방지)
+- 📱 반응형 디자인 최적화
+- 🎭 애니메이션 및 인터랙션 구현
+
+---
+
+## 📞 문의 및 지원
+
+문제가 발생하거나 건의사항이 있으시면 GitHub Issues에 등록해주세요.
+
+---
+
+## 💜 Made with Love
+
+Made with 💜 for **NMIXX** & **NSWER**
+
+Powered by **Claude Sonnet 4.5** 🤖
