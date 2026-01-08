@@ -31,13 +31,11 @@ const ProofModal = ({ isOpen, onClose, verificationId, isAllSongs = false }: Pro
 
   // View state: 'list' (All Songs list) or 'detail' (single verification detail)
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list')
-  const [selectedVerificationId, setSelectedVerificationId] = useState<number | null>(null)
 
   useEffect(() => {
     if (isOpen && verificationId) {
       // Reset view mode when modal opens
       setViewMode(isAllSongs ? 'list' : 'detail')
-      setSelectedVerificationId(null)
 
       if (isAllSongs) {
         fetchUserVerifications()
@@ -79,14 +77,12 @@ const ProofModal = ({ isOpen, onClose, verificationId, isAllSongs = false }: Pro
   }
 
   const handleSongClick = async (songVerificationId: number) => {
-    setSelectedVerificationId(songVerificationId)
     setViewMode('detail')
     await fetchVerification(songVerificationId)
   }
 
   const handleBackToList = () => {
     setViewMode('list')
-    setSelectedVerificationId(null)
     setVerification(null)
   }
 
