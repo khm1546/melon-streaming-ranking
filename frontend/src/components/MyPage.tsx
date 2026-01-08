@@ -27,9 +27,14 @@ const MyPage = ({ username, songs, onEditClick }: MyPageProps) => {
       setVerifications(data.verifications)
       setTotalStreams(data.totalStreams)
       setError('')
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to fetch user data:', err)
-      setError('데이터를 불러올 수 없습니다')
+      // 404 에러인 경우 "데이터가 없습니다"로 표시
+      if (err?.response?.status === 404) {
+        setError('데이터가 없습니다')
+      } else {
+        setError('데이터를 불러올 수 없습니다')
+      }
     } finally {
       setLoading(false)
     }
