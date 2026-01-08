@@ -24,10 +24,28 @@ export interface LeaderboardEntry {
   username: string
   profileImage?: string
   songTitle: string
-  songId: number
+  songId: number | null
   streamCount: number
   verifiedAt: string
   createdAt: string
+}
+
+export interface UserVerification {
+  id: number
+  songId: number
+  songTitle: string
+  streamCount: number
+  proofImage: string
+  status: string
+  verifiedAt: string
+  createdAt: string
+}
+
+export interface UserProfile {
+  id: number
+  username: string
+  verifications: UserVerification[]
+  totalStreams: number
 }
 
 export interface Stats {
@@ -89,6 +107,13 @@ export const statsApi = {
 export const authApi = {
   login: async (username: string, pin: string) => {
     const response = await apiClient.post('/auth/login', { username, pin })
+    return response.data
+  },
+}
+
+export const usersApi = {
+  getById: async (userId: number): Promise<UserProfile> => {
+    const response = await apiClient.get(`/users/id/${userId}`)
     return response.data
   },
 }

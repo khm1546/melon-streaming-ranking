@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { verificationsApi } from '../api/client'
+import { verificationsApi, usersApi, type UserVerification } from '../api/client'
 import { useState, useEffect } from 'react'
 import './ProofModal.css'
 
@@ -7,6 +7,7 @@ interface ProofModalProps {
   isOpen: boolean
   onClose: () => void
   verificationId: number
+  isAllSongs?: boolean
 }
 
 interface VerificationDetail {
@@ -20,16 +21,23 @@ interface VerificationDetail {
   createdAt: string
 }
 
-const ProofModal = ({ isOpen, onClose, verificationId }: ProofModalProps) => {
+const ProofModal = ({ isOpen, onClose, verificationId, isAllSongs = false }: ProofModalProps) => {
   const [verification, setVerification] = useState<VerificationDetail | null>(null)
+  const [allVerifications, setAllVerifications] = useState<UserVerification[]>([])
+  const [username, setUsername] = useState<string>('')
+  const [totalStreams, setTotalStreams] = useState<number>(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
     if (isOpen && verificationId) {
-      fetchVerification()
+      if (isAllSongs) {
+        fetchUserVerifications()
+      } else {
+        fetchVerification()
+      }
     }
-  }, [isOpen, verificationId])
+  }, [isOpen, verificationId, isAllSongs])
 
   const fetchVerification = async () => {
     try {
@@ -40,6 +48,22 @@ const ProofModal = ({ isOpen, onClose, verificationId }: ProofModalProps) => {
     } catch (err) {
       console.error('Failed to fetch verification:', err)
       setError('인증 정보를 불러올 수 없습니다')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchUserVerifications = async () => {
+    try {
+      setLoading(true)
+      const data = await usersApi.getById(verificationId)
+      setUsername(data.username)
+      setAllVerifications(data.verifications)
+      setTotalStreams(data.totalStreams)
+      setError('')
+    } catch (err) {
+      console.error('Failed to fetch user verifications:', err)
+      setError('사용자 정보를 불러올 수 없습니다')
     } finally {
       setLoading(false)
     }
@@ -109,6 +133,52 @@ const ProofModal = ({ isOpen, onClose, verificationId }: ProofModalProps) => {
                 <div className="error-state">
                   <p className="error-message">{error}</p>
                 </div>
+              ) : isAllSongs && allVerifications.length > 0 ? (
+                <>
+                  {/* User Info for All Songs */}
+                  <div className="proof-user-info">
+                    <div className="info-row">
+                      <span className="info-label">사용자</span>
+                      <span className="info-value">{username}</span>
+                    </div>
+                    <div className="info-row">
+                      <span className="info-label">총 스트리밍 횟수</span>
+                      <span className="info-value highlight">{formatNumber(totalStreams)}</span>
+                    </div>
+                    <div className="info-row">
+                      <span className="info-label">곡 수</span>
+                      <span className="info-value">{allVerifications.length}곡</span>
+                    </div>
+                  </div>
+
+                  {/* All Songs List */}
+                  <div className="all-songs-list">
+                    <h3 className="section-subtitle">곡별 스트리밍 현황</h3>
+                    {allVerifications.map((v, index) => (
+                      <motion.div
+                        key={v.id}
+                        className="song-verification-item glass"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                      >
+                        <div className="song-verification-header">
+                          <div className="song-info">
+                            <span className="song-rank">#{index + 1}</span>
+                            <span className="song-title">{v.songTitle}</span>
+                          </div>
+                          <div className="song-stream-count">
+                            <span className="count-number">{formatNumber(v.streamCount)}</span>
+                            <span className="count-label">streams</span>
+                          </div>
+                        </div>
+                        <div className="song-verification-footer">
+                          <span className="verified-date">{formatDate(v.verifiedAt)}</span>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </>
               ) : verification ? (
                 <>
                   {/* User Info */}

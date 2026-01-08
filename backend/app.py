@@ -94,52 +94,83 @@ def get_leaderboard():
         time_filter = request.args.get('filter', 'all')  # all, today, week, month
         song_id = request.args.get('songId')  # optional song filter
 
-        query = db.session.query(
-            Verification.id,
-            User.username,
-            Song.title.label('song_title'),
-            Song.id.label('song_id'),
-            Verification.stream_count,
-            Verification.verified_at,
-            Verification.created_at
-        ).join(User, Verification.user_id == User.id) \
-         .join(Song, Verification.song_id == Song.id) \
-         .filter(Verification.status == 'approved')
-
-        # Apply song filter
-        if song_id:
-            query = query.filter(Song.id == int(song_id))
-
-        # Apply time filter
+        # Apply time filter condition
         now = kst_now()
+        time_condition = Verification.status == 'approved'
         if time_filter == 'today':
-            query = query.filter(db.func.date(Verification.created_at) == now.date())
+            time_condition = db.and_(time_condition, db.func.date(Verification.created_at) == now.date())
         elif time_filter == 'week':
             week_ago = now - timedelta(days=7)
-            query = query.filter(Verification.created_at >= week_ago)
+            time_condition = db.and_(time_condition, Verification.created_at >= week_ago)
         elif time_filter == 'month':
             month_ago = now - timedelta(days=30)
-            query = query.filter(Verification.created_at >= month_ago)
+            time_condition = db.and_(time_condition, Verification.created_at >= month_ago)
 
-        # Order by stream count and creation date
-        results = query.order_by(
-            Verification.stream_count.desc(),
-            Verification.created_at.asc()
-        ).all()
+        if song_id:
+            # Specific song selected - show individual verifications
+            query = db.session.query(
+                Verification.id,
+                User.username,
+                Song.title.label('song_title'),
+                Song.id.label('song_id'),
+                Verification.stream_count,
+                Verification.verified_at,
+                Verification.created_at
+            ).join(User, Verification.user_id == User.id) \
+             .join(Song, Verification.song_id == Song.id) \
+             .filter(time_condition) \
+             .filter(Song.id == int(song_id))
 
-        # Add rank
-        leaderboard = []
-        for rank, result in enumerate(results, start=1):
-            leaderboard.append({
-                'id': result.id,
-                'rank': rank,
-                'username': result.username,
-                'songTitle': result.song_title,
-                'songId': result.song_id,
-                'streamCount': result.stream_count,
-                'verifiedAt': result.verified_at.isoformat() if result.verified_at else None,
-                'createdAt': result.created_at.isoformat() if result.created_at else None
-            })
+            # Order by stream count and creation date
+            results = query.order_by(
+                Verification.stream_count.desc(),
+                Verification.created_at.asc()
+            ).all()
+
+            # Add rank
+            leaderboard = []
+            for rank, result in enumerate(results, start=1):
+                leaderboard.append({
+                    'id': result.id,
+                    'rank': rank,
+                    'username': result.username,
+                    'songTitle': result.song_title,
+                    'songId': result.song_id,
+                    'streamCount': result.stream_count,
+                    'verifiedAt': result.verified_at.isoformat() if result.verified_at else None,
+                    'createdAt': result.created_at.isoformat() if result.created_at else None
+                })
+        else:
+            # All Songs - aggregate by user
+            query = db.session.query(
+                User.id.label('user_id'),
+                User.username,
+                db.func.sum(Verification.stream_count).label('total_stream_count'),
+                db.func.max(Verification.verified_at).label('latest_verified_at'),
+                db.func.max(Verification.created_at).label('latest_created_at')
+            ).join(Verification, User.id == Verification.user_id) \
+             .filter(time_condition) \
+             .group_by(User.id, User.username)
+
+            # Order by total stream count
+            results = query.order_by(
+                db.desc('total_stream_count'),
+                db.desc('latest_created_at')
+            ).all()
+
+            # Add rank
+            leaderboard = []
+            for rank, result in enumerate(results, start=1):
+                leaderboard.append({
+                    'id': result.user_id,  # Use user_id as identifier for All Songs
+                    'rank': rank,
+                    'username': result.username,
+                    'songTitle': 'All Songs',
+                    'songId': None,
+                    'streamCount': result.total_stream_count,
+                    'verifiedAt': result.latest_verified_at.isoformat() if result.latest_verified_at else None,
+                    'createdAt': result.latest_created_at.isoformat() if result.latest_created_at else None
+                })
 
         return jsonify(leaderboard)
     except Exception as e:
@@ -293,6 +324,47 @@ def get_user(username):
             **user.to_dict(),
             'verifications': verifications,
             'totalStreams': sum(v.stream_count for v in user.verifications if v.status == 'approved')
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 404
+
+
+@app.route('/api/users/id/<int:user_id>', methods=['GET'])
+def get_user_by_id(user_id):
+    """Get user profile by ID with their verifications"""
+    try:
+        user = User.query.get_or_404(user_id)
+
+        # Get all approved verifications with song details
+        verifications_data = db.session.query(
+            Verification,
+            Song
+        ).join(Song, Verification.song_id == Song.id) \
+         .filter(Verification.user_id == user_id) \
+         .filter(Verification.status == 'approved') \
+         .order_by(Verification.stream_count.desc()) \
+         .all()
+
+        verifications = []
+        for verification, song in verifications_data:
+            verifications.append({
+                'id': verification.id,
+                'songId': song.id,
+                'songTitle': song.title,
+                'streamCount': verification.stream_count,
+                'proofImage': verification.proof_image,
+                'status': verification.status,
+                'verifiedAt': verification.verified_at.isoformat() if verification.verified_at else None,
+                'createdAt': verification.created_at.isoformat() if verification.created_at else None
+            })
+
+        total_streams = sum(v['streamCount'] for v in verifications)
+
+        return jsonify({
+            'id': user.id,
+            'username': user.username,
+            'verifications': verifications,
+            'totalStreams': total_streams
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 404

@@ -16,7 +16,7 @@ interface LeaderboardEntry {
 
 interface LeaderboardProps {
   currentUsername: string | null
-  onProofClick: (verificationId: number) => void
+  onProofClick: (verificationId: number, isAllSongs?: boolean) => void
 }
 
 const Leaderboard = ({ currentUsername, onProofClick }: LeaderboardProps) => {
@@ -265,7 +265,7 @@ const Leaderboard = ({ currentUsername, onProofClick }: LeaderboardProps) => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
                 whileHover={{ scale: 1.02 }}
-                onClick={() => onProofClick(entry.id)}
+                onClick={() => onProofClick(entry.id, !selectedSongId)}
                 style={{ cursor: 'pointer' }}
               >
                 <div className="rank-badge">
