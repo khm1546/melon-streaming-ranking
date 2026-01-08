@@ -181,16 +181,21 @@ def get_leaderboard():
 def create_verification():
     """Create or update verification (streaming proof) with PIN authentication"""
     try:
-        # Validate request
-        if 'proof' not in request.files:
+        # Check if this is an update without a new file
+        proof_file = request.files.get('proof')
+        existing_proof_image = request.form.get('existingProofImage')
+
+        # Validate: must have either a new file or existing proof image
+        if not proof_file and not existing_proof_image:
             return jsonify({'error': '인증 이미지를 업로드해주세요'}), 400
 
-        proof_file = request.files['proof']
-        if proof_file.filename == '':
-            return jsonify({'error': '파일이 선택되지 않았습니다'}), 400
+        # If new file provided, validate it
+        if proof_file:
+            if proof_file.filename == '':
+                return jsonify({'error': '파일이 선택되지 않았습니다'}), 400
 
-        if not allowed_file(proof_file.filename):
-            return jsonify({'error': '지원하지 않는 파일 형식입니다. PNG, JPG, JPEG, GIF, WEBP 파일만 업로드 가능합니다'}), 400
+            if not allowed_file(proof_file.filename):
+                return jsonify({'error': '지원하지 않는 파일 형식입니다. PNG, JPG, JPEG, GIF, WEBP 파일만 업로드 가능합니다'}), 400
 
         # Get form data
         username = request.form.get('username')
@@ -231,18 +236,25 @@ def create_verification():
             db.session.add(user)
             db.session.flush()
 
-        # Save proof image
-        filename = secure_filename(proof_file.filename)
-        timestamp = kst_now().strftime('%Y%m%d_%H%M%S')
-        filename = f"{user.id}_{song_id}_{timestamp}_{filename}"
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        proof_file.save(filepath)
-
         # Check if verification already exists for this user and song
         verification = Verification.query.filter_by(
             user_id=user.id,
             song_id=song_id
         ).first()
+
+        # Save new proof image if provided, otherwise keep existing
+        if proof_file:
+            filename = secure_filename(proof_file.filename)
+            timestamp = kst_now().strftime('%Y%m%d_%H%M%S')
+            filename = f"{user.id}_{song_id}_{timestamp}_{filename}"
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            proof_file.save(filepath)
+        elif existing_proof_image:
+            # Keep existing filename
+            filename = existing_proof_image
+        else:
+            # This shouldn't happen due to earlier validation
+            return jsonify({'error': '인증 이미지를 업로드해주세요'}), 400
 
         if verification:
             # Update existing verification

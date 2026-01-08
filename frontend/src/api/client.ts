@@ -116,4 +116,8 @@ export const usersApi = {
     const response = await apiClient.get(`/users/id/${userId}`)
     return response.data
   },
+  getByUsername: async (username: string): Promise<UserProfile> => {
+    const response = await apiClient.get(`/users/${username}`)
+    return response.data
+  },
 }

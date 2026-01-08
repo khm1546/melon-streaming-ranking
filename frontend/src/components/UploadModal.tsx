@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useDropzone } from 'react-dropzone'
-import { verificationsApi } from '../api/client'
+import { verificationsApi, type UserVerification } from '../api/client'
 import { authUtils } from '../utils/auth'
 import type { Song } from '../App'
 import './UploadModal.css'
@@ -11,9 +11,18 @@ interface UploadModalProps {
   onClose: () => void
   onSuccess: () => void
   onLoginSuccess: (username: string) => void
+  isEditMode?: boolean
+  existingVerification?: UserVerification
 }
 
-const UploadModal = ({ song, onClose, onSuccess, onLoginSuccess }: UploadModalProps) => {
+const UploadModal = ({
+  song,
+  onClose,
+  onSuccess,
+  onLoginSuccess,
+  isEditMode = false,
+  existingVerification
+}: UploadModalProps) => {
   const [username, setUsername] = useState('')
   const [pin, setPin] = useState('')
   const [streamCount, setStreamCount] = useState('')
@@ -21,14 +30,22 @@ const UploadModal = ({ song, onClose, onSuccess, onLoginSuccess }: UploadModalPr
   const [isUploading, setIsUploading] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
-  // Load saved credentials from localStorage
+  // Load saved credentials from localStorage or existing verification
   useEffect(() => {
     const auth = authUtils.getAuth()
     if (auth) {
       setUsername(auth.username)
       setPin(auth.pin)
     }
-  }, [])
+
+    // If in edit mode, populate with existing data
+    if (isEditMode && existingVerification) {
+      setStreamCount(existingVerification.streamCount.toString())
+      if (existingVerification.proofImage) {
+        setPreviewUrl(`/image/melon/uploads/${existingVerification.proofImage}`)
+      }
+    }
+  }, [isEditMode, existingVerification])
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
@@ -55,7 +72,10 @@ const UploadModal = ({ song, onClose, onSuccess, onLoginSuccess }: UploadModalPr
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!username || !pin || !streamCount || !uploadedFile) {
+    // In edit mode, allow submission without a new file if there's an existing proof image
+    const hasProof = uploadedFile || (isEditMode && existingVerification?.proofImage)
+
+    if (!username || !pin || !streamCount || !hasProof) {
       alert('모든 항목을 입력하고 스크린샷을 업로드해주세요')
       return
     }
@@ -74,7 +94,15 @@ const UploadModal = ({ song, onClose, onSuccess, onLoginSuccess }: UploadModalPr
       formData.append('pin', pin)
       formData.append('songId', song.id.toString())
       formData.append('streamCount', streamCount)
-      formData.append('proof', uploadedFile)
+
+      // Only append new file if one was uploaded, otherwise backend will keep existing image
+      if (uploadedFile) {
+        formData.append('proof', uploadedFile)
+      } else if (isEditMode && existingVerification?.proofImage) {
+        // If no new file but editing, we still need to send the request
+        // The backend will keep the existing image
+        formData.append('existingProofImage', existingVerification.proofImage)
+      }
 
       const response = await verificationsApi.create(formData)
 
@@ -82,7 +110,8 @@ const UploadModal = ({ song, onClose, onSuccess, onLoginSuccess }: UploadModalPr
       authUtils.saveAuth(username, pin)
       onLoginSuccess(username)
 
-      alert(response.message || '업로드 성공! 스트리밍 인증이 제출되었습니다.')
+      const message = isEditMode ? '수정되었습니다!' : '업로드 성공! 스트리밍 인증이 제출되었습니다.'
+      alert(response.message || message)
       onSuccess()
     } catch (error: any) {
       console.error('Upload failed:', error)
@@ -140,7 +169,9 @@ const UploadModal = ({ song, onClose, onSuccess, onLoginSuccess }: UploadModalPr
         </button>
 
         <div className="modal-header">
-          <h2 className="modal-title">스트리밍 인증 업로드</h2>
+          <h2 className="modal-title">
+            {isEditMode ? '스트리밍 인증 수정' : '스트리밍 인증 업로드'}
+          </h2>
           <div className="modal-song-info">
             <img src={song.coverImage} alt={song.title} className="modal-song-cover" />
             <div>
@@ -237,14 +268,14 @@ const UploadModal = ({ song, onClose, onSuccess, onLoginSuccess }: UploadModalPr
           <motion.button
             type="submit"
             className="submit-button"
-            disabled={isUploading || !username || !pin || !streamCount || !uploadedFile}
+            disabled={isUploading || !username || !pin || !streamCount || (!uploadedFile && !(isEditMode && existingVerification?.proofImage))}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
             {isUploading ? (
-              <span className="loading-spinner">⏳ 업로드 중...</span>
+              <span className="loading-spinner">⏳ {isEditMode ? '수정 중...' : '업로드 중...'}</span>
             ) : (
-              <span>인증 제출</span>
+              <span>{isEditMode ? '수정 완료' : '인증 제출'}</span>
             )}
           </motion.button>
         </form>

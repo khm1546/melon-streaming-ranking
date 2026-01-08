@@ -4,10 +4,11 @@ import Header from './components/Header'
 import Hero from './components/Hero'
 import SongGrid from './components/SongGrid'
 import Leaderboard from './components/Leaderboard'
+import MyPage from './components/MyPage'
 import UploadModal from './components/UploadModal'
 import LoginModal from './components/LoginModal'
 import ProofModal from './components/ProofModal'
-import { songsApi } from './api/client'
+import { songsApi, type UserVerification } from './api/client'
 import { authUtils } from './utils/auth'
 import './App.css'
 
@@ -32,8 +33,10 @@ export interface LeaderboardEntry {
 
 function App() {
   const [selectedSong, setSelectedSong] = useState<Song | null>(null)
+  const [selectedVerification, setSelectedVerification] = useState<UserVerification | null>(null)
   const [showUploadModal, setShowUploadModal] = useState(false)
-  const [activeView, setActiveView] = useState<'songs' | 'leaderboard'>('songs')
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [activeView, setActiveView] = useState<'songs' | 'leaderboard' | 'mypage'>('songs')
   const [songs, setSongs] = useState<Song[]>([])
 
   // Auth state
@@ -77,6 +80,8 @@ function App() {
   const handleCloseModal = () => {
     setShowUploadModal(false)
     setSelectedSong(null)
+    setSelectedVerification(null)
+    setIsEditMode(false)
   }
 
   const handleUploadSuccess = async () => {
@@ -114,6 +119,13 @@ function App() {
     setProofModalData(null)
   }
 
+  const handleEditClick = (song: Song, verification: UserVerification) => {
+    setSelectedSong(song)
+    setSelectedVerification(verification)
+    setIsEditMode(true)
+    setShowUploadModal(true)
+  }
+
   return (
     <div className="app">
       <Header
@@ -137,7 +149,7 @@ function App() {
               <Hero />
               <SongGrid songs={songs} onSongClick={handleSongClick} />
             </motion.div>
-          ) : (
+          ) : activeView === 'leaderboard' ? (
             <motion.div
               key="leaderboard"
               initial={{ opacity: 0, y: 20 }}
@@ -150,7 +162,21 @@ function App() {
                 onProofClick={handleProofClick}
               />
             </motion.div>
-          )}
+          ) : activeView === 'mypage' && username ? (
+            <motion.div
+              key="mypage"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <MyPage
+                username={username}
+                songs={songs}
+                onEditClick={handleEditClick}
+              />
+            </motion.div>
+          ) : null}
         </AnimatePresence>
       </main>
 
@@ -161,6 +187,8 @@ function App() {
             onClose={handleCloseModal}
             onSuccess={handleUploadSuccess}
             onLoginSuccess={handleLoginSuccess}
+            isEditMode={isEditMode}
+            existingVerification={selectedVerification || undefined}
           />
         )}
       </AnimatePresence>

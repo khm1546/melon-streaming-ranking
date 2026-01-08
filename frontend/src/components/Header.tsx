@@ -2,8 +2,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import './Header.css'
 
 interface HeaderProps {
-  activeView: 'songs' | 'leaderboard'
-  onViewChange: (view: 'songs' | 'leaderboard') => void
+  activeView: 'songs' | 'leaderboard' | 'mypage'
+  onViewChange: (view: 'songs' | 'leaderboard' | 'mypage') => void
   username: string | null
   onLoginClick: () => void
   onLogoutClick: () => void
@@ -49,6 +49,21 @@ const Header = ({ activeView, onViewChange, username, onLoginClick, onLogoutClic
             <span className="nav-icon">🏆</span>
             <span>Leaderboard</span>
           </motion.button>
+
+          {username && (
+            <motion.button
+              className={`nav-button ${activeView === 'mypage' ? 'active' : ''}`}
+              onClick={() => onViewChange('mypage')}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+            >
+              <span className="nav-icon">👤</span>
+              <span>My Page</span>
+            </motion.button>
+          )}
 
           <AnimatePresence mode="wait">
             {username ? (

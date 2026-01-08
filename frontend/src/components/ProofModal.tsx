@@ -29,8 +29,16 @@ const ProofModal = ({ isOpen, onClose, verificationId, isAllSongs = false }: Pro
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  // View state: 'list' (All Songs list) or 'detail' (single verification detail)
+  const [viewMode, setViewMode] = useState<'list' | 'detail'>('list')
+  const [selectedVerificationId, setSelectedVerificationId] = useState<number | null>(null)
+
   useEffect(() => {
     if (isOpen && verificationId) {
+      // Reset view mode when modal opens
+      setViewMode(isAllSongs ? 'list' : 'detail')
+      setSelectedVerificationId(null)
+
       if (isAllSongs) {
         fetchUserVerifications()
       } else {
@@ -39,10 +47,11 @@ const ProofModal = ({ isOpen, onClose, verificationId, isAllSongs = false }: Pro
     }
   }, [isOpen, verificationId, isAllSongs])
 
-  const fetchVerification = async () => {
+  const fetchVerification = async (id?: number) => {
     try {
       setLoading(true)
-      const data = await verificationsApi.getById(verificationId)
+      const targetId = id || verificationId
+      const data = await verificationsApi.getById(targetId)
       setVerification(data)
       setError('')
     } catch (err) {
@@ -67,6 +76,18 @@ const ProofModal = ({ isOpen, onClose, verificationId, isAllSongs = false }: Pro
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleSongClick = async (songVerificationId: number) => {
+    setSelectedVerificationId(songVerificationId)
+    setViewMode('detail')
+    await fetchVerification(songVerificationId)
+  }
+
+  const handleBackToList = () => {
+    setViewMode('list')
+    setSelectedVerificationId(null)
+    setVerification(null)
   }
 
   const formatNumber = (num: number) => {
@@ -104,9 +125,26 @@ const ProofModal = ({ isOpen, onClose, verificationId, isAllSongs = false }: Pro
             onClick={(e) => e.stopPropagation()}
           >
             <div className="proof-modal-header">
-              <h2 className="proof-modal-title">
-                <span className="holo-text">스트리밍 인증</span>
-              </h2>
+              <div className="header-left">
+                {isAllSongs && viewMode === 'detail' && (
+                  <motion.button
+                    className="back-button"
+                    onClick={handleBackToList}
+                    whileHover={{ scale: 1.02, x: -3 }}
+                    whileTap={{ scale: 0.97 }}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <span className="back-icon">←</span>
+                    <span className="back-text">Back</span>
+                    <div className="button-glow"></div>
+                  </motion.button>
+                )}
+                <h2 className="proof-modal-title">
+                  <span className="holo-text">스트리밍 인증</span>
+                </h2>
+              </div>
               <motion.button
                 className="modal-close-button"
                 onClick={onClose}
@@ -133,7 +171,7 @@ const ProofModal = ({ isOpen, onClose, verificationId, isAllSongs = false }: Pro
                 <div className="error-state">
                   <p className="error-message">{error}</p>
                 </div>
-              ) : isAllSongs && allVerifications.length > 0 ? (
+              ) : isAllSongs && viewMode === 'list' && allVerifications.length > 0 ? (
                 <>
                   {/* User Info for All Songs */}
                   <div className="proof-user-info">
@@ -157,10 +195,14 @@ const ProofModal = ({ isOpen, onClose, verificationId, isAllSongs = false }: Pro
                     {allVerifications.map((v, index) => (
                       <motion.div
                         key={v.id}
-                        className="song-verification-item glass"
+                        className="song-verification-item glass clickable"
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
+                        onClick={() => handleSongClick(v.id)}
+                        whileHover={{ scale: 1.02, x: 4 }}
+                        whileTap={{ scale: 0.98 }}
+                        style={{ cursor: 'pointer' }}
                       >
                         <div className="song-verification-header">
                           <div className="song-info">
@@ -174,6 +216,7 @@ const ProofModal = ({ isOpen, onClose, verificationId, isAllSongs = false }: Pro
                         </div>
                         <div className="song-verification-footer">
                           <span className="verified-date">{formatDate(v.verifiedAt)}</span>
+                          <span className="view-detail-hint">상세 보기 →</span>
                         </div>
                       </motion.div>
                     ))}
