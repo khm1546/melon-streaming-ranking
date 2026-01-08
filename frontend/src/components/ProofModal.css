@@ -373,13 +373,6 @@
   margin-bottom: 0.5rem;
 }
 
-.song-info {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex: 1;
-  min-width: 0;
-}
 
 .song-rank {
   font-family: var(--font-display);

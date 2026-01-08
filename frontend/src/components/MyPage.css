@@ -23,7 +23,7 @@
   margin-bottom: var(--space-2xl);
 }
 
-.stat-card {
+.mypage-stat-card {
   display: flex;
   align-items: center;
   gap: var(--space-lg);
@@ -37,7 +37,7 @@
   transition: all var(--transition-base);
 }
 
-.stat-card:hover {
+.mypage-stat-card:hover {
   background: linear-gradient(135deg,
     rgba(255, 255, 255, 0.12),
     rgba(255, 255, 255, 0.06)
@@ -47,7 +47,7 @@
   transform: translateY(-4px);
 }
 
-.stat-icon {
+.mypage-stat-icon {
   font-size: 3rem;
   line-height: 1;
   filter: drop-shadow(0 4px 8px rgba(255, 0, 110, 0.3));
@@ -59,7 +59,7 @@
   gap: 0.25rem;
 }
 
-.stat-value {
+.mypage-stat-value {
   font-family: var(--font-display);
   font-size: 2rem;
   font-weight: 700;
@@ -73,7 +73,7 @@
   -webkit-text-fill-color: transparent;
 }
 
-.stat-label {
+.mypage-stat-label {
   font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.6);
   text-transform: uppercase;
@@ -209,7 +209,7 @@
   gap: 0.5rem;
 }
 
-.song-title {
+.mypage-song-title {
   font-size: 1.2rem;
   font-weight: 700;
   color: white;
@@ -325,15 +325,15 @@
     gap: var(--space-md);
   }
 
-  .stat-card {
+  .mypage-stat-card {
     padding: var(--space-md);
   }
 
-  .stat-icon {
+  .mypage-stat-icon {
     font-size: 2.5rem;
   }
 
-  .stat-value {
+  .mypage-stat-value {
     font-size: 1.75rem;
   }
 
@@ -370,7 +370,7 @@
     font-size: 1.3rem;
   }
 
-  .song-title {
+  .mypage-song-title {
     font-size: 1.1rem;
   }
 

@@ -77,19 +77,19 @@ const MyPage = ({ username, songs, onEditClick }: MyPageProps) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
       >
-        <div className="stat-card glass">
-          <div className="stat-icon">🎵</div>
+        <div className="mypage-stat-card glass">
+          <div className="mypage-stat-icon">🎵</div>
           <div className="stat-content">
-            <div className="stat-value">{verifications.length}</div>
-            <div className="stat-label">곡 등록</div>
+            <div className="mypage-stat-value">{verifications.length}</div>
+            <div className="mypage-stat-label">곡 등록</div>
           </div>
         </div>
 
-        <div className="stat-card glass">
-          <div className="stat-icon">🔥</div>
+        <div className="mypage-stat-card glass">
+          <div className="mypage-stat-icon">🔥</div>
           <div className="stat-content">
-            <div className="stat-value">{formatNumber(totalStreams)}</div>
-            <div className="stat-label">총 스트리밍</div>
+            <div className="mypage-stat-value">{formatNumber(totalStreams)}</div>
+            <div className="mypage-stat-label">총 스트리밍</div>
           </div>
         </div>
       </motion.div>
@@ -139,7 +139,7 @@ const MyPage = ({ username, songs, onEditClick }: MyPageProps) => {
                 >
                   <div className="verification-header">
                     <div className="song-info-wrapper">
-                      <h4 className="song-title">{verification.songTitle}</h4>
+                      <h4 className="mypage-song-title">{verification.songTitle}</h4>
                       <p className="verified-date">{formatDate(verification.verifiedAt)}</p>
                     </div>
                   </div>
