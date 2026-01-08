@@ -201,9 +201,9 @@ const ProofModal = ({ isOpen, onClose, verificationId, isAllSongs = false }: Pro
                         style={{ cursor: 'pointer' }}
                       >
                         <div className="song-verification-header">
-                          <div className="song-info">
+                          <div className="verification-song-info">
                             <span className="song-rank">#{index + 1}</span>
-                            <span className="song-title">{v.songTitle}</span>
+                            <span className="verification-song-title">{v.songTitle}</span>
                           </div>
                           <div className="song-stream-count">
                             <span className="count-number">{formatNumber(v.streamCount)}</span>
